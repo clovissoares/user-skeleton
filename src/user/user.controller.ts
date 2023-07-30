@@ -8,7 +8,7 @@ import {
     Delete, 
     BadRequestException,
     UseGuards,
-    Request,
+    Query,
  } from '@nestjs/common';
 
 import { UserService } from './user.service';
@@ -16,8 +16,9 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SignInDto } from './dtos/sign-in.dto';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 
 @Controller('users')
 export class UserController {
@@ -29,7 +30,8 @@ export class UserController {
     @Post()
     createUser(@Body() createUserDto: CreateUserDto){
         return this.userService.create(createUserDto).catch(err => {
-            throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
+            //Handles errors thrown from TypeORM
+           throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
         });
     }
 
@@ -40,8 +42,8 @@ export class UserController {
     }
 
     @Get()
-    findAll(){
-        return this.userService.findAll();
+    findAll(@Query() paginationQueryDto: PaginationQueryDto){
+        return this.userService.findAll(paginationQueryDto);
     }
 
     @Patch(':id')
@@ -54,14 +56,24 @@ export class UserController {
         return this.userService.remove(id);
     }
 
-    @Post('auth')
+    @Post('auth/signIn')
     signIn(@Body() signInDto: SignInDto){
         return this.authService.signIn(signInDto.email, signInDto.password);
+    }
+
+    @Post('auth/signUp')
+    signUp(@Body() createUserDto: CreateUserDto){
+        return this.authService.signUp(createUserDto);
     }
 
     @Post('auth/refresh')
     refresh(@Body() token: RefreshTokenDto){
         return this.authService.refresh(token.refresh_token);
+    }
+
+    @Post('auth/signOut')
+    signOut(@Body() token: RefreshTokenDto){
+        return this.authService.signOut(token.refresh_token);
     }
 }
 

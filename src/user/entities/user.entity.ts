@@ -14,6 +14,9 @@ export class User {
     @Column()
     password: string;
 
+    @Column({default:""})
+    refresh_token: string;
+
     @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
     created_at: Date;
 
