@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -31,8 +31,22 @@ export class UserService {
         return user;
     }
 
-    async findByEmail(email: string){
-        return await this.userRepository.findOne({where: {email}});
+    //Only function that returns the password
+    async findByEmailWithPassword(email: string){
+        const user = await this.userRepository
+        .createQueryBuilder()
+        .select("user")
+        .addSelect("user.password")
+        .from(User, "user")
+        .where("user.email = :email", {email})
+        .getOne()
+
+        //Check if user is found
+        if(!user){
+            throw new NotFoundException(`User ${email} does not exists.`);
+        }
+
+        return user;
     }
 
     async findAll(paginationQueryDto: PaginationQueryDto){
@@ -45,6 +59,11 @@ export class UserService {
     }
 
     async update(id: string, updateUserDto: UpdateUserDto){
+        //Check if user is tring to update password
+        if(updateUserDto.password) {
+          throw new BadRequestException('Cannot update password field');    
+        }
+
         const user = await this.userRepository.preload({id, ...updateUserDto}); 
 
         if(!user){

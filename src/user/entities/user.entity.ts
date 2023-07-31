@@ -11,7 +11,8 @@ export class User {
     @Column({unique: true})
     email: string;
 
-    @Column()
+    //Only visible if you explicitly ask for it in a query builder
+    @Column({select: false})
     password: string;
 
     @Column({default:""})
