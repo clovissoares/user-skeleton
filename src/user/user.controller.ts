@@ -9,8 +9,10 @@ import {
     BadRequestException,
     UseGuards,
     Query,
+    Request
  } from '@nestjs/common';
 
+import { CustomRequest } from '../common/types/custom-request.type';
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -30,13 +32,19 @@ export class UserController {
     @Post()
     createUser(@Body() createUserDto: CreateUserDto){
         return this.userService.create(createUserDto).catch(err => {
-            //Handles errors thrown from TypeORM
+            //Handle errors thrown from TypeORM
            throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
         });
     }
 
+    @Get('/profile')
+    @UseGuards(AuthGuard)
+    profile(@Request() req: CustomRequest){
+        console.log(req.user);
+        return this.userService.profile(req.user.payload.sub);
+    }
+
     @Get(':id')
-    //@UseGuards(AuthGuard)
     findOne(@Param('id') id: string){
         return this.userService.findOne(id);
     }

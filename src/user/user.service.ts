@@ -15,10 +15,10 @@ export class UserService {
         private readonly userRepository : Repository<User>
     ){}
 
-    create(createUserDto: CreateUserDto) {
+    async create(createUserDto: CreateUserDto) {
         const user = this.userRepository.create(createUserDto);
         
-        return this.userRepository.save(user);
+        return await this.userRepository.save(user);
     }
 
     async findOne(id : string) {
@@ -56,6 +56,16 @@ export class UserService {
       skip: offset,
       take: limit,
     });
+    }
+
+    async profile(id: string){
+        const user = await this.userRepository.findOne({where: {id}})
+
+        if (!user) {
+         throw new NotFoundException(`User ${id} not found`);
+        }
+ 
+         return user;
     }
 
     async update(id: string, updateUserDto: UpdateUserDto){

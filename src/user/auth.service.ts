@@ -5,14 +5,9 @@ import { promisify } from 'util';
 
 import { UserService } from './user.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { TokenPayload } from 'src/common/types/token-payload.type';
 
 const scrypt = promisify(_scrypt);
-
-//Change this interface everytime you want to change the token payload
-interface TokenPayload {
-    sub: string;
-    email: string;
-}
 
 @Injectable()
 export class AuthService {
