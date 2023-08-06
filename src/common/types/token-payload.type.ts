@@ -1,5 +1,8 @@
 //Controls the data inside a token
 export type TokenPayload = {
-    sub: string;
-    email: string;
+        payload: {
+            sub: string,
+            email: string
+        }
+        type: string,
 };

@@ -5,7 +5,7 @@ import {
     UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CustomRequest } from '../types/custom-request.type';
+import { RequestWithAuthToken } from '../types/custom-request.type';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         try {
-        const request: CustomRequest = context.switchToHttp().getRequest();
+        const request: RequestWithAuthToken = context.switchToHttp().getRequest();
 
         const [type, token] = request.headers.authorization?.split(' ') ?? [];
 
@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
             if(payload.type !== 'auth'){
                 throw 'Invalid token type';
             }
-
+            
             request.user = payload;
 
         } catch(err) {

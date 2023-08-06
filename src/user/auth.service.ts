@@ -32,7 +32,7 @@ export class AuthService {
         }
 
         //Create a payload with every information stored in the access and refresh tokens 
-        const payload: TokenPayload = { sub: user.id, email: user.email};
+        const payload: TokenPayload = {payload: { sub: user.id, email: user.email}, type:''};
 
         return this.returnTokens(payload);
     }
@@ -60,21 +60,21 @@ export class AuthService {
         return this.signIn(user.email, password);
     }
 
-    async refresh(token: string){
+    async refresh(tokenString: string){
         try{
         //Destructuring token
-        const {payload, type} = await this.jwtService.verifyAsync(token);
+        const {token} = await this.jwtService.verifyAsync(tokenString);
         
         //Assing type to payload 
-        const finalPayload: TokenPayload = payload; 
+        const finalPayload: TokenPayload = token; 
 
         //Check token type
-        if(type !== 'refresh') {
+        if(finalPayload.type !== 'refresh') {
             throw 'Invalid token type';
         }
 
         //Search user in database
-        const user = await this.userService.findOne(finalPayload.sub);
+        const user = await this.userService.findOne(finalPayload.payload.sub);
 
         //Check if user is found
         if(!user) {
@@ -82,7 +82,7 @@ export class AuthService {
         }
 
         //Check stored refresh_token
-        if(user.refresh_token !== token) {
+        if(user.refresh_token !== tokenString) {
             throw 'Invalid refresh token';
         }
 
@@ -113,7 +113,7 @@ export class AuthService {
             }
     
             //Search user in database
-            const user = await this.userService.findOne(finalPayload.sub);
+            const user = await this.userService.findOne(finalPayload.payload.sub);
     
             //Check if user is found
             if(!user) {
@@ -126,7 +126,7 @@ export class AuthService {
             }
             
             //Reset the token in database
-            await this.userService.updateToken(finalPayload.sub, '');
+            await this.userService.updateToken(finalPayload.payload.sub, '');
 
             //Return simple message
             return {"message":"User signed out succeeded"}
@@ -142,17 +142,23 @@ export class AuthService {
     }
 
     //Return the tokens and stores the refresh token to keep track of sign outs
-    async returnTokens(payload: TokenPayload){
+    async returnTokens(token: TokenPayload){
 
-        const refresh_token = await this.jwtService.signAsync({payload, type: 'refresh'},{
+        //Changes type property
+        token.type = 'refresh';
+
+        const refresh_token = await this.jwtService.signAsync({token},{
             expiresIn: '60h'
         })
 
         //Update token to match the newly created
-        await this.userService.updateToken(payload.sub, refresh_token);
+        await this.userService.updateToken(token.payload.sub, refresh_token);
+
+        //Changes type property
+        token.type = 'auth';
 
         return {
-            acess_token: await this.jwtService.signAsync({payload, type: 'auth'}),
+            acess_token: await this.jwtService.signAsync(token),
             refresh_token
         };
     }

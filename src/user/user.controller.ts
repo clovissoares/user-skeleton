@@ -12,15 +12,22 @@ import {
     Request
  } from '@nestjs/common';
 
-import { CustomRequest } from '../common/types/custom-request.type';
+import { RequestWithAuthToken } from '../common/types/custom-request.type';
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SignInDto } from './dtos/sign-in.dto';
-import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { PermissionGuard } from 'src/common/guards/permission.guard'
+import { SetPermission } from 'src/common/decorators/permission.decorator';
+import  Permission from 'src/common/types/premission.type';
+import { User } from 'src/common/decorators/user.decorator';
+import { TokenPayload } from 'src/common/types/token-payload.type';
+
+
 
 @Controller('users')
 export class UserController {
@@ -38,9 +45,10 @@ export class UserController {
     }
 
     @Get('/profile')
-    @UseGuards(AuthGuard)
-    profile(@Request() req: CustomRequest){
-        console.log(req.user);
+    @SetPermission(Permission.FindUser)
+    @UseGuards(AuthGuard, PermissionGuard)
+    profile(@Request() req: RequestWithAuthToken, @User() user: TokenPayload){
+        console.log(user.payload);
         return this.userService.profile(req.user.payload.sub);
     }
 
@@ -50,6 +58,8 @@ export class UserController {
     }
 
     @Get()
+    @SetPermission(Permission.FindUsers)
+    @UseGuards(PermissionGuard)
     findAll(@Query() paginationQueryDto: PaginationQueryDto){
         return this.userService.findAll(paginationQueryDto);
     }
@@ -71,7 +81,10 @@ export class UserController {
 
     @Post('auth/signUp')
     signUp(@Body() createUserDto: CreateUserDto){
-        return this.authService.signUp(createUserDto);
+        return this.authService.signUp(createUserDto).catch(err => {
+            //Handle errors thrown from TypeORM
+           throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
+        });
     }
 
     @Post('auth/refresh')
