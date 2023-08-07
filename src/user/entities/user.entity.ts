@@ -1,3 +1,4 @@
+import Permission from 'src/common/types/premission.type';
 import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
@@ -17,6 +18,15 @@ export class User {
 
     @Column({default:""})
     refresh_token: string;
+
+    @Column({
+        type:'enum',
+        enum: Permission,
+        array: true,
+        default:[],
+        select: false
+    })
+    permissions: Permission[];
 
     @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
     created_at: Date;

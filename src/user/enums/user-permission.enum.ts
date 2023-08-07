@@ -1,9 +1,10 @@
 enum UserPermission {
   CreateUser = 'CreateUser',
-  UpdateUser = 'UpdaeUser',
+  UpdateUser = 'UpdateUser',
   DeleteUser = 'DeleteUser',
   FindUser = 'FindUser',
-  FindUsers = 'FindUsers'
+  FindUsers = 'FindUsers',
+  Profile = 'Profile'
 }
  
 export default UserPermission;

@@ -1,3 +1,5 @@
+import Permission from "./premission.type";
+
 //Controls the data inside a token
 export type TokenPayload = {
         payload: {
@@ -5,4 +7,5 @@ export type TokenPayload = {
             email: string
         }
         type: string,
+        permissions: Permission[]
 };

@@ -18,9 +18,9 @@ export class AuthService {
 
     async signIn(email: string, password: string){
         //Find user by email in database
-        const user = await this.userService.findByEmailWithPassword(email);
+        const user = await this.userService.findByEmailWithSecureInfo(email);
 
-        //Separate salt and hashed password for comparison 
+        //Separate salt and hashed password for comparison
         const [salt, storedHash] = user.password.split('.');
 
         //Hash the user given password
@@ -32,7 +32,11 @@ export class AuthService {
         }
 
         //Create a payload with every information stored in the access and refresh tokens 
-        const payload: TokenPayload = {payload: { sub: user.id, email: user.email}, type:''};
+        const payload: TokenPayload = {
+         payload: { sub: user.id, email: user.email}, 
+         type:'', 
+         permissions: user.permissions
+        };
 
         return this.returnTokens(payload);
     }
@@ -143,9 +147,14 @@ export class AuthService {
 
     //Return the tokens and stores the refresh token to keep track of sign outs
     async returnTokens(token: TokenPayload){
+        //Changes type property, hard codded to prevent changes
+        token.type = 'auth';
 
-        //Changes type property
+        const acess_token = await this.jwtService.signAsync(token);
+
+        //Changes type property, hard codded to prevent changes
         token.type = 'refresh';
+        token.permissions = [];
 
         const refresh_token = await this.jwtService.signAsync({token},{
             expiresIn: '60h'
@@ -154,11 +163,8 @@ export class AuthService {
         //Update token to match the newly created
         await this.userService.updateToken(token.payload.sub, refresh_token);
 
-        //Changes type property
-        token.type = 'auth';
-
         return {
-            acess_token: await this.jwtService.signAsync(token),
+            acess_token,
             refresh_token
         };
     }

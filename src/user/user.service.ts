@@ -32,11 +32,12 @@ export class UserService {
     }
 
     //Only function that returns the password
-    async findByEmailWithPassword(email: string){
+    async findByEmailWithSecureInfo(email: string){
         const user = await this.userRepository
         .createQueryBuilder()
         .select("user")
         .addSelect("user.password")
+        .addSelect("user.permissions")
         .from(User, "user")
         .where("user.email = :email", {email})
         .getOne()
