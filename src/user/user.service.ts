@@ -50,6 +50,23 @@ export class UserService {
         return user;
     }
 
+    async findOneWithToken(id: string) {
+        const user = await this.userRepository
+        .createQueryBuilder()
+        .select("user")
+        .addSelect("user.refresh_token")
+        .from(User, "user")
+        .where("user.id = :id", {id})
+        .getOne()
+
+        //Check if user is found
+        if(!user){
+            throw new NotFoundException(`User ${id} does not exists.`);
+        }
+
+        return user;
+    }
+
     async findAll(paginationQueryDto: PaginationQueryDto){
     const { limit, offset } = paginationQueryDto;
 

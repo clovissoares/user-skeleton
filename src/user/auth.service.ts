@@ -78,7 +78,7 @@ export class AuthService {
         }
 
         //Search user in database
-        const user = await this.userService.findOne(finalPayload.payload.sub);
+        const user = await this.userService.findOneWithToken(finalPayload.payload.sub);
 
         //Check if user is found
         if(!user) {

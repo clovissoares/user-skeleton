@@ -2,7 +2,8 @@ import {Injectable, ExecutionContext, CanActivate, UnauthorizedException} from '
 import { Reflector } from '@nestjs/core';
 import { RequestWithAuthToken } from '../types/request-with-auth-token.type';
 
-//This guard should be used in conjuction with AuthGuard
+//This guard depends on AuthGuard executing first
+//Always use this sequence @UseGuard(AuthGuard, PermissionGuard)
 @Injectable()
 export class PermissionGuard implements CanActivate {
     constructor(private reflector: Reflector) {}

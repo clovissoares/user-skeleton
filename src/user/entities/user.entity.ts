@@ -1,10 +1,10 @@
+import {Column, Entity } from 'typeorm';
+
+import { Base } from 'src/common/entities/base.entity';
 import Permission from 'src/common/types/premission.type';
-import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
-export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class User extends Base {
 
     @Column()
     name: string;
@@ -16,9 +16,13 @@ export class User {
     @Column({select: false})
     password: string;
 
-    @Column({default:""})
+    @Column({
+        select: false,
+        default:""
+    })
     refresh_token: string;
 
+    //Only visible if you explicitly ask for it in a query builder
     @Column({
         type:'enum',
         enum: Permission,
@@ -27,10 +31,4 @@ export class User {
         select: false
     })
     permissions: Permission[];
-
-    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
-    created_at: Date;
-
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
-    updated_at: Date;
 }
