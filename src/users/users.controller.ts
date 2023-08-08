@@ -9,10 +9,9 @@ import {
     BadRequestException,
     UseGuards,
     Query,
-    Request
  } from '@nestjs/common';
 
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -29,16 +28,16 @@ import { TokenPayload } from 'src/common/types/token-payload.type';
 
 
 @Controller('users')
-export class UserController {
+export class UsersController {
     constructor(
-        private readonly userService: UserService,
+        private readonly usersService: UsersService,
         private readonly authService: AuthService
     ){}
 
     @Post()
     @SetPermission(Permission.CreateUser)
     async createUser(@Body() createUserDto: CreateUserDto){
-        return await this.userService.create(createUserDto).catch(err => {
+        return await this.usersService.create(createUserDto).catch(err => {
             //Handle errors thrown from TypeORM
            throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
         });
@@ -48,26 +47,26 @@ export class UserController {
     @SetPermission(Permission.Profile)
     @UseGuards(AuthGuard, PermissionGuard)
     profile(@User() user: TokenPayload){
-        return this.userService.profile(user.payload.sub);
+        return this.usersService.profile(user.payload.sub);
     }
 
     @Get(':id')
     @SetPermission(Permission.FindUser)
     findOne(@Param('id') id: string){
-        return this.userService.findOne(id);
+        return this.usersService.findOne(id);
     }
 
     @Get()
     @SetPermission(Permission.FindUsers)
     @UseGuards(AuthGuard, PermissionGuard)
     findAll(@Query() paginationQueryDto: PaginationQueryDto){
-        return this.userService.findAll(paginationQueryDto);
+        return this.usersService.findAll(paginationQueryDto);
     }
 
     @Patch(':id')
     @SetPermission(Permission.UpdateUser)
     async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto){
-        return await this.userService.update(id, updateUserDto).catch(err => {
+        return await this.usersService.update(id, updateUserDto).catch(err => {
             //Handle errors thrown from TypeORM
            throw new BadRequestException(err.detail.replaceAll('(',' ').replaceAll(')',' '));
         });
@@ -76,7 +75,7 @@ export class UserController {
     @Delete(':id')
     @SetPermission(Permission.DeleteUser)
     remove(@Param('id') id: string){
-        return this.userService.remove(id);
+        return this.usersService.remove(id);
     }
 
     @Post('auth/signIn')

@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { TokenPayload } from 'src/common/types/token-payload.type';
 
@@ -12,13 +12,13 @@ const scrypt = promisify(_scrypt);
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly userService : UserService,
+        private readonly usersService : UsersService,
         private readonly jwtService : JwtService
     ){}
 
     async signIn(email: string, password: string){
         //Find user by email in database
-        const user = await this.userService.findByEmailWithSecureInfo(email);
+        const user = await this.usersService.findByEmailWithSecureInfo(email);
 
         //Separate salt and hashed password for comparison
         const [salt, storedHash] = user.password.split('.');
@@ -58,7 +58,7 @@ export class AuthService {
         const user: CreateUserDto = {...clone, password:result};
 
         //Saving user with hashed password
-        await this.userService.create(user);
+        await this.usersService.create(user);
 
         //Return tokens
         return this.signIn(user.email, password);
@@ -78,7 +78,7 @@ export class AuthService {
         }
 
         //Search user in database
-        const user = await this.userService.findOneWithToken(finalPayload.payload.sub);
+        const user = await this.usersService.findOneWithToken(finalPayload.payload.sub);
 
         //Check if user is found
         if(!user) {
@@ -117,7 +117,7 @@ export class AuthService {
             }
     
             //Search user in database
-            const user = await this.userService.findOne(finalPayload.payload.sub);
+            const user = await this.usersService.findOne(finalPayload.payload.sub);
     
             //Check if user is found
             if(!user) {
@@ -130,7 +130,7 @@ export class AuthService {
             }
             
             //Reset the token in database
-            await this.userService.updateToken(finalPayload.payload.sub, '');
+            await this.usersService.updateToken(finalPayload.payload.sub, '');
 
             //Return simple message
             return {"message":"User signed out succeeded"}
@@ -161,7 +161,7 @@ export class AuthService {
         })
 
         //Update token to match the newly created
-        await this.userService.updateToken(token.payload.sub, refresh_token);
+        await this.usersService.updateToken(token.payload.sub, refresh_token);
 
         return {
             acess_token,

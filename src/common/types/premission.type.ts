@@ -1,4 +1,4 @@
-import UserPermission from "src/user/enums/user-permission.enum";
+import UserPermission from "src/users/enums/user-permission.enum";
  
 const Permission = {
   ...UserPermission

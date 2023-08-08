@@ -9,7 +9,7 @@ import { PaginationQueryDto } from 'src/common/dtos/pagination-query.dto';
 
 
 @Injectable()
-export class UserService {
+export class UsersService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository : Repository<User>
